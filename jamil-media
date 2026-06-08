@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Folder bawaan untuk FFMPEG & Python Downloader
+BASE_DIR="/storage/emulated/0/FFMPEG"
+PY_SCRIPT="$PREFIX/bin/downloader.py"
+
+# Pastikan file python downloader selalu ada di Termux
+if [ ! -f "$PY_SCRIPT" ]; then
+    echo "[*] Mengunduh komponen downloader..."
+    curl -sL https://raw.githubusercontent.com/ippex3/media-termux/main/downloader.py -o "$PY_SCRIPT"
+fi
+
+clear
+echo "========================================"
+echo "          JAMIL-MEDIA TOOL v2           "
+echo "========================================"
+echo " [DOWNLOADER MENU]"
+echo "  1. Download Video (YT, TikTok, FB)"
+echo "  2. Download Audio/MP3 (YT, TikTok, FB)"
+echo "  3. Download Video Instagram"
+echo " [FFMPEG EDITING MENU]"
+echo "  4. Loop Video 10 Detik ke 1 Jam"
+echo "  5. Gabung Video & Audio (Combine)"
+echo "  6. Gabung & Langsung Kompres"
+echo "  7. Kompres Video Saja"
+echo "========================================"
+read -p "Pilih opsi (1-7): " opsi
+
+case $opsi in
+    1)
+        echo -e "\n[Download Video]"
+        read -p "Masukkan URL Video: " url
+        python "$PY_SCRIPT" "yt_video" "$url"
+        ;;
+    2)
+        echo -e "\n[Download Audio MP3]"
+        read -p "Masukkan URL Video: " url
+        python "$PY_SCRIPT" "yt_audio" "$url"
+        ;;
+    3)
+        echo -e "\n[Download Instagram]"
+        read -p "Masukkan URL Instagram Reel/Post: " url
+        python "$PY_SCRIPT" "ig" "$url"
+        ;;
+    4)
+        echo -e "\n[Opsi 4: Loop Video]"
+        read -p "Nama file video input (ex: video.mp4): " vid
+        read -p "Nama file hasil/output (ex: output.mp4): " out
+        ffmpeg -stream_loop 327 -i "$BASE_DIR/$vid" -c copy "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    5)
+        echo -e "\n[Opsi 5: Gabung Video & Audio]"
+        read -p "Nama file video (ex: video.mp4): " vid
+        read -p "Nama file audio (ex: music.mp3): " aud
+        read -p "Nama file hasil/output (ex: output.mp4): " out
+        ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -i "$BASE_DIR/$aud" -c:v libx264 -preset superfast -crf 23 -c:a aac -shortest -map 0:v -map 1:a -y "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    6)
+        echo -e "\n[Opsi 6: Gabung & Langsung Kompres]"
+        read -p "Nama file video (ex: video.mp4): " vid
+        read -p "Nama file audio (ex: music.mp3): " aud
+        read -p "Nama file hasil/output (ex: output_kompres.mp4): " out
+        ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -i "$BASE_DIR/$aud" -c:v libx264 -preset superfast -crf 31 -c:a aac -shortest -map 0:v -map 1:a -y "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    7)
+        echo -e "\n[Opsi 7: Kompres Video Saja]"
+        read -p "Nama file video input (ex: video.mp4): " vid
+        read -p "Nama file hasil/output (ex: output_kompres.mp4): " out
+        ffmpeg -i "$BASE_DIR/$vid" -vcodec libx264 -crf 28 -acodec aac "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    *)
+        echo -e "\n[!] Opsi tidak valid!"
+        ;;
+esac
