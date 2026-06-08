@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Folder bawaan agar tidak perlu ketik path panjang
+BASE_DIR="/storage/emulated/0/FFMPEG"
+
+clear
+echo "========================================"
+echo "          FF-JAMIL-MEDIA TOOL           "
+echo "========================================"
+echo "1. Loop Video 10 Detik ke 1 Jam"
+echo "2. Gabung Video & Audio (Combine)"
+echo "3. Gabung & Langsung Kompres"
+echo "4. Kompres Video Saja"
+echo "========================================"
+read -p "Pilih opsi (1-4): " opsi
+
+case $opsi in
+    1)
+        echo -e "\n[Opsi 1: Loop Video]"
+        read -p "Nama file video input (ex: video.mp4): " vid
+        read -p "Nama file hasil/output (ex: output.mp4): " out
+        ffmpeg -stream_loop 327 -i "$BASE_DIR/$vid" -c copy "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    2)
+        echo -e "\n[Opsi 2: Gabung Video & Audio]"
+        read -p "Nama file video (ex: video.mp4): " vid
+        read -p "Nama file audio (ex: music.mp3): " aud
+        read -p "Nama file hasil/output (ex: output.mp4): " out
+        ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -i "$BASE_DIR/$aud" -c:v libx264 -preset superfast -crf 23 -c:a aac -shortest -map 0:v -map 1:a -y "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    3)
+        echo -e "\n[Opsi 3: Gabung & Langsung Kompres]"
+        read -p "Nama file video (ex: video.mp4): " vid
+        read -p "Nama file audio (ex: music.mp3): " aud
+        read -p "Nama file hasil/output (ex: output_kompres.mp4): " out
+        ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -i "$BASE_DIR/$aud" -c:v libx264 -preset superfast -crf 31 -c:a aac -shortest -map 0:v -map 1:a -y "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    4)
+        echo -e "\n[Opsi 4: Kompres Video Saja]"
+        read -p "Nama file video input (ex: video.mp4): " vid
+        read -p "Nama file hasil/output (ex: output_kompres.mp4): " out
+        ffmpeg -i "$BASE_DIR/$vid" -vcodec libx264 -crf 28 -acodec aac "$BASE_DIR/$out"
+        echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+        ;;
+    *)
+        echo -e "\n[!] Opsi tidak valid!"
+        ;;
+esac
