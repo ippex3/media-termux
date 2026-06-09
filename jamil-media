@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Folder bawaan untuk FFMPEG
+BASE_DIR="/storage/emulated/0/FFMPEG"
+PY_SCRIPT="$PREFIX/bin/downloader.py"
+
+# Pastikan file python downloader tersedia
+if [ ! -f "$PY_SCRIPT" ]; then
+    echo "[*] Mengunduh komponen downloader..."
+    curl -sL https://raw.githubusercontent.com/ippex3/media-termux/main/downloader.py -o "$PY_SCRIPT"
+fi
+
+# Fungsi untuk menahan layar
+kembali_ke_menu() {
+    echo -e "\n----------------------------------------"
+    read -p "Tekan [Enter] untuk kembali ke menu utama..."
+}
+
+# Fungsi konfirmasi sebelum eksekusi
+konfirmasi_menu() {
+    echo -e "\n[Tekan 'n' lalu Enter jika ingin batal dan kembali ke menu utama]"
+    read -p "Apakah ingin melanjutkan? (y/n): " konfirm
+    [[ "$konfirm" =~ ^[Nn]$ ]] && return 1 || return 0
+}
+
+while true; do
+    clear
+    echo "========================================"
+    echo "          JAMIL-MEDIA TOOL v11          "
+    echo "========================================"
+    echo " [DOWNLOADER MENU]"
+    echo "  1. Download Video (YT, TikTok, FB, X, Threads)"
+    echo "  2. Download Audio/MP3 (YT, TikTok, FB)"
+    echo "  3. Download Video Instagram"
+    echo " [FFMPEG EDITING & LOOPING]"
+    echo "  4. Loop Video: 1 Jam (Default)"
+    echo "  5. Loop Video: Custom Jumlah (Repetisi)"
+    echo "  6. Loop Video: Custom Durasi (Jam:Menit:Detik)"
+    echo "  7. Gabung Video & 1 Audio"
+    echo "  8. Gabung Video & Banyak Audio (Tanpa Kompres)"
+    echo "  9. Kompres Video Saja"
+    echo " [KELUAR]"
+    echo "  10. Keluar dari Aplikasi"
+    echo "========================================"
+    read -p "Pilih opsi (1-10): " opsi
+
+    case $opsi in
+        1) echo -e "\n[Download Video]"; if konfirmasi_menu; then read -p "URL: " url; python "$PY_SCRIPT" "yt_video" "$url"; kembali_ke_menu; fi ;;
+        2) echo -e "\n[Download Audio]"; if konfirmasi_menu; then read -p "URL: " url; python "$PY_SCRIPT" "yt_audio" "$url"; kembali_ke_menu; fi ;;
+        3) echo -e "\n[Download IG]"; if konfirmasi_menu; then read -p "URL: " url; python "$PY_SCRIPT" "ig" "$url"; kembali_ke_menu; fi ;;
+        4) echo -e "\n[Loop 1 Jam]"; if konfirmasi_menu; then read -p "Input: " vid; read -p "Output: " out; ffmpeg -stream_loop 327 -i "$BASE_DIR/$vid" -c copy "$BASE_DIR/$out"; kembali_ke_menu; fi ;;
+        5) echo -e "\n[Loop Custom Jumlah]"; if konfirmasi_menu; then read -p "Input: " vid; read -p "Jumlah repetisi: " n; read -p "Output: " out; ffmpeg -stream_loop "$n" -i "$BASE_DIR/$vid" -c copy "$BASE_DIR/$out"; kembali_ke_menu; fi ;;
+        6) echo -e "\n[Loop Custom Durasi]"; if konfirmasi_menu; then read -p "Input: " vid; read -p "Durasi (HH:MM:SS): " dur; read -p "Output: " out; ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -t "$dur" -c copy "$BASE_DIR/$out"; kembali_ke_menu; fi ;;
+        7) echo -e "\n[Gabung Video & 1 Audio]"; if konfirmasi_menu; then read -p "Video: " vid; read -p "Audio: " aud; read -p "Output: " out; ffmpeg -stream_loop -1 -i "$BASE_DIR/$vid" -i "$BASE_DIR/$aud" -c:v libx264 -preset superfast -crf 23 -c:a aac -shortest -map 0:v -map 1:a -y "$BASE_DIR/$out"; kembali_ke_menu; fi ;;
+        8) 
+            echo -e "\n[Gabung Banyak Audio - Tanpa Kompres]"; 
+            if konfirmasi_menu; then 
+                read -p "Video (ex: video.mp4): " vid; 
+                echo "Nama file audio (spasi, ex: m1.mp3 m2.mp3):"; 
+                read -a audios; 
+                read -p "Output (ex: hasil.mp4): " out; 
+                cd "$BASE_DIR" || exit
+                > list.txt
+                for f in "${audios[@]}"; do echo "file '$f'" >> list.txt; done
+                ffmpeg -f concat -safe 0 -i list.txt -c copy temp_audio.mp3 -y
+                ffmpeg -stream_loop -1 -i "$vid" -i temp_audio.mp3 -c:v copy -c:a aac -shortest -y "$out"
+                rm list.txt temp_audio.mp3
+                cd "$HOME" || exit
+                echo -e "\n>> Selesai! File disimpan di $BASE_DIR/$out"
+                kembali_ke_menu; 
+            fi 
+            ;;
+        9) echo -e "\n[Kompres Saja]"; if konfirmasi_menu; then read -p "Input: " vid; read -p "Output: " out; ffmpeg -i "$BASE_DIR/$vid" -vcodec libx264 -crf 28 -acodec aac "$BASE_DIR/$out"; kembali_ke_menu; fi ;;
+        10) echo -e "\nTerima kasih telah menggunakan Jamil-Media!\n"; break ;;
+        *) echo -e "\n[!] Opsi tidak valid!"; kembali_ke_menu ;;
+    esac
+done
