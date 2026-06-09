@@ -1,0 +1,28 @@
+==================================================
+PANDUAN LENGKAP: INSTALASI JAMIL-MEDIA
+==================================================
+
+1. IZIN AKSES MEMORI:
+   Ketik: termux-setup-storage
+   (Lalu klik Izinkan/Allow di pop-up HP)
+
+2. UPDATE SISTEM:
+   Ketik: pkg update && pkg upgrade -y
+
+3. INSTALL BAHASA & ALAT:
+   Ketik: pkg install python ffmpeg curl -y
+
+4. INSTALL DOWNLOADER:
+   Ketik: pip install yt-dlp instaloader
+
+5. INSTALASI JAMIL-MEDIA:
+   Salin ini dan tekan Enter:
+   curl -L https://raw.githubusercontent.com/ippex3/media-termux/main/jamil-media -o $PREFIX/bin/jamil-media && chmod +x $PREFIX/bin/jamil-media
+
+6. CARA PAKAI:
+   Ketik saja: jamil-media
+
+CATATAN:
+- File hasil download ada di folder Download
+- File untuk diedit FFMPEG taruh di folder FFMPEG
+==================================================
